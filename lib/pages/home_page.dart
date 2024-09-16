@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:todo_flutter/components/dialog_box.dart';
 import 'package:todo_flutter/components/todo_tile.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -53,7 +54,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   void deleteTask(int index) {
-    setState(() {
+    Fluttertoast.showToast(
+      msg: "'${toDoList[index][0]}' deleted!",
+      toastLength: Toast.LENGTH_LONG, 
+      gravity: ToastGravity.BOTTOM, 
+      timeInSecForIosWeb: 2,
+      backgroundColor: Colors.blue[900],
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+     setState(() {
       toDoList.removeAt(index);
     });
   }
