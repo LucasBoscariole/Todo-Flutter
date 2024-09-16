@@ -26,16 +26,30 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void saveNewTask() {
+    setState(() {
+      toDoList.add([_controller.text, false]);
+    });
+    _controller.clear();
+    Navigator.of(context).pop();
+  }
+
+  void cancelCreation() {
+    Navigator.of(context).pop();
+  }
+
   void createNewTask() {
     showDialog(
         context: context,
         builder: (context) {
           return DialogBox(
             controller: _controller,
-            onSave: () {},
-            onCancel: () => Navigator.of(context).pop(),
+            onSave: saveNewTask,
+            onCancel: cancelCreation,
           );
-        });
+        }).then((value) {
+      _controller.clear();
+    });
   }
 
   @override
