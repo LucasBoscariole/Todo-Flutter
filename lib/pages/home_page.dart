@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:todo_flutter/components/dialog_box.dart';
 import 'package:todo_flutter/components/todo_tile.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:todo_flutter/database/database.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,28 +13,40 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // hive box
+  final _myToDoBox = Hive.box("todo_box");
+  ToDoDataBase db = ToDoDataBase();
+
+  @override
+  void initState() {
+    // first time load default
+    if (_myToDoBox.get("TODOLIST") == null) {
+      db.createInitialData();
+    } else {
+      db.loadData();
+    }
+
+    super.initState();
+  }
+
   // text controller
   final _controller = TextEditingController();
-
-  // list of todo
-  List toDoList = [
-    ["Test 1", false],
-    ["Test 2", false],
-  ];
 
   // checkbox changed
   void checkBoxChanged(bool? value, int index) {
     setState(() {
-      toDoList[index][1] = !toDoList[index][1];
+      db.toDoList[index][1] = !db.toDoList[index][1];
     });
+    db.updateDataBase();
   }
 
   void saveNewTask() {
     setState(() {
-      toDoList.add([_controller.text, false]);
+      db.toDoList.add([_controller.text, false]);
     });
     _controller.clear();
     Navigator.of(context).pop();
+    db.updateDataBase();
   }
 
   void cancelCreation() {
@@ -55,17 +69,18 @@ class _HomePageState extends State<HomePage> {
 
   void deleteTask(int index) {
     Fluttertoast.showToast(
-      msg: "'${toDoList[index][0]}' deleted!",
-      toastLength: Toast.LENGTH_LONG, 
-      gravity: ToastGravity.BOTTOM, 
+      msg: "'${db.toDoList[index][0]}' deleted!",
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
       timeInSecForIosWeb: 2,
       backgroundColor: Colors.blue[900],
       textColor: Colors.white,
       fontSize: 16.0,
     );
-     setState(() {
-      toDoList.removeAt(index);
+    setState(() {
+      db.toDoList.removeAt(index);
     });
+    db.updateDataBase();
   }
 
   @override
@@ -82,11 +97,11 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Colors.blue,
           child: const Icon(Icons.add)),
       body: ListView.builder(
-          itemCount: toDoList.length,
+          itemCount: db.toDoList.length,
           itemBuilder: (context, index) {
             return ToDoTile(
-              taskName: toDoList[index][0],
-              taskCompleted: toDoList[index][1],
+              taskName: db.toDoList[index][0],
+              taskCompleted: db.toDoList[index][1],
               onChanged: (value) => checkBoxChanged(value, index),
               deleteTodo: (context) => deleteTask(index),
             );
